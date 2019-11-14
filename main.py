@@ -13,6 +13,7 @@ def initialise():
     dataset = os.path.join(dataset_directory, "test_rating.dat")
     file = open(dataset, "r")
     dict = {}  # dictionary of {movie:{user:rating}}
+    dict_mean = {}  # dictionary of {movieid : user ratings mean}
 
     for line in file:
         fields = line.split("::")
@@ -22,15 +23,21 @@ def initialise():
 
         if movieid in dict.keys():
             dict[movieid][userid] = rating
+            dict_mean[movieid] += int(rating)
         else:
             dict[movieid] = {}
             dict[movieid][userid] = rating
+            dict_mean[movieid] = int(rating)
 
-    return dict
+    for key in dict_mean.keys():
+        dict_mean[key] = dict_mean[key]/len((dict[key]))
+
+    print(dict_mean)
+    return dict, dict_mean
 
 
 def main():
-    utility_matrix = initialise()
+    utility_matrix, util_mean = initialise()
 
 
 main()
