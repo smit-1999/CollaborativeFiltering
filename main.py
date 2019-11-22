@@ -32,7 +32,6 @@ def initialise():
     for key in dict_mean.keys():
         dict_mean[key] = dict_mean[key]/len((dict[key]))
 
-    print(sum(len(lst) for dct in dict.values() for lst in dct.values()))
     return dict, dict_mean
 
 
@@ -70,10 +69,18 @@ def similarity(dict_a, dict_b):
     score = score/((math.sqrt(mod(dict_a)))*(math.sqrt(mod(dict_b))))
     return score
 
+def normalize(dict, dict_mean):
+    for movie, user_rating in  dict.items():
+        mean_val = dict_mean[movie]
+        for user, rating in user_rating.items():
+#            print(type(rating))
+            dict[movie][user] = rating - mean_val
+#    print(dict)
+    return dict, dict_mean
 
 def main():
     utility_matrix, util_mean = initialise()
-
+    utility_matrix, util_mean = normalize(utility_matrix, util_mean)
 
 main()
 
