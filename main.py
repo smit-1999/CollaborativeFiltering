@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-
+import math
 
 def get_dataset_directory():
     curr_dir = os.getcwd()  # gets the current working directory
@@ -10,7 +10,7 @@ def get_dataset_directory():
 
 def initialise():
     dataset_directory = get_dataset_directory()
-    dataset = os.path.join(dataset_directory, "test_rating.dat")
+    dataset = os.path.join(dataset_directory, "ratings.dat")
     file = open(dataset, "r")
     dict = {}  # dictionary of {movie:{user:rating}}
     dict_mean = {}  # dictionary of {movieid : user ratings mean}
@@ -22,18 +22,53 @@ def initialise():
         rating = fields[2]
 
         if movieid in dict.keys():
-            dict[movieid][userid] = rating
+            dict[movieid][userid] = int(rating)
             dict_mean[movieid] += int(rating)
         else:
             dict[movieid] = {}
-            dict[movieid][userid] = rating
+            dict[movieid][userid] = int(rating)
             dict_mean[movieid] = int(rating)
 
     for key in dict_mean.keys():
         dict_mean[key] = dict_mean[key]/len((dict[key]))
 
-    print(dict_mean)
+    print(sum(len(lst) for dct in dict.values() for lst in dct.values()))
     return dict, dict_mean
+
+
+def mod(dict_a):
+    """
+    This function calculates the magnitude of a vector(here, dictionary)
+    :param dict_a: {userid : rating}
+    :return: Magnitude of a vector
+    """
+    val = 0
+    for key in dict_a.keys():
+        val = val + dict_a[key]**2
+    return math.sqrt(val)
+
+
+def similarity(dict_a, dict_b):
+    """
+    This function calculates the similarity between two movies
+    :param dict_a: Contains the ratings given to movie A (userid:rating)
+    :param dict_b: Contains the ratings given to movie B (userid:rating)
+    :return: Similarity between two movies
+    """
+
+    min_dict_length = min(len(dict_a), len(dict_b))
+    score = 0
+    if min_dict_length == len(dict_a):
+        for key in dict_a.keys():
+            if key in dict_b.keys():
+                score += dict_a[key]*dict_b[key]
+    else:
+        for key in dict_b.keys():
+            if key in dict_a.keys():
+                score += dict_a[key] * dict_b[key]
+
+    score = score/((math.sqrt(mod(dict_a)))*(math.sqrt(mod(dict_b))))
+    return score
 
 
 def main():

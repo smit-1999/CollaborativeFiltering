@@ -2,6 +2,7 @@
   <dictionary name="Smit">
     <words>
       <w>dataset</w>
+      <w>userid</w>
     </words>
   </dictionary>
 </component>
