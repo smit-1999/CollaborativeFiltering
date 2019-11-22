@@ -13,7 +13,7 @@ def initialise():
     dataset = os.path.join(dataset_directory, "test_ratings.dat")
     file = open(dataset, "r")
     dict = {}  # dictionary of {movie:{user:rating}}
-    dict_mean = {}  # dictionary of {movieid : user ratings mean}
+    dict_mean = {}  # dictionary of {movieid : mean(of user ratings)}
 
     for line in file:
         fields = line.split("::")
@@ -67,7 +67,7 @@ def similarity(dict_a, dict_b):
             if key in dict_a.keys():
                 score += dict_a[key] * dict_b[key]
 
-    print(score, mod(dict_a), mod(dict_b))
+    # print(score, mod(dict_a), mod(dict_b))
     score = score/((mod(dict_a))*(mod(dict_b)))
     return score
 
@@ -81,22 +81,28 @@ def normalize(dict, dict_mean):
 #    print(dict)
     return dict, dict_mean
 
+
 def pairwise_sim(movie, user, utility_matrix):
     similarity_dict = {}
     for movie2 in utility_matrix:
         similarity_dict[movie2] = similarity(utility_matrix[str(movie)], utility_matrix[str(movie2)])
 #    print(similarity_dict)
     return similarity_dict
-    
-    
 
-def predicted_rating(similarity_matrix, userid, movieid, utility_matrix):
+
+def predicted_rating(similarity_matrix, userid, movieid, utility_matrix, util_mean):
     num = 0
-    den = 0
-    for key in similarity_matrix.keys():
-        if similarity_matrix[key] > 0 and similarity_matrix[key] != 1 and (userid in utility_matrix[key].keys()):
-            num += (similarity_matrix[key]*utility_matrix[key][userid])
-            den += similarity_matrix[key]
+    den = 1
+
+    for movie in similarity_matrix.keys():
+
+        if similarity_matrix[movie] > 0 and similarity_matrix[movie] != 1 and (userid in utility_matrix[movie].keys()):
+            print('similarity val=', similarity_matrix[movie], 'for movie:', movie)
+            print((utility_matrix[movie].keys()))
+            print(utility_matrix[movie][userid])
+            num += (similarity_matrix[movie]*(utility_matrix[movie][userid])+util_mean[movie])
+            den += similarity_matrix[movie]
+    print('num=', num, 'den:', den)
     return num/den
 
 
@@ -112,10 +118,8 @@ def main():
 
     utility_matrix, util_mean = normalize(utility_matrix, util_mean)
     similarity_matrix = pairwise_sim(1, 5, utility_matrix)
-    print(utility_matrix['1'])
-    print(utility_matrix['3'])
-    score = similarity(utility_matrix['1'], utility_matrix['3'])
-    print(score)
+    pred_val = predicted_rating(similarity_matrix, '5', '1', utility_matrix, util_mean)
+    print(pred_val)
 
 
 main()
