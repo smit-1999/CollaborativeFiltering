@@ -71,6 +71,7 @@ def similarity(dict_a, dict_b):
     score = score/((mod(dict_a))*(mod(dict_b)))
     return score
 
+
 def normalize(dict, dict_mean):
     for movie, user_rating in  dict.items():
         mean_val = dict_mean[movie]
@@ -89,6 +90,16 @@ def pairwise_sim(movie, user, utility_matrix):
     
     
 
+def predicted_rating(similarity_matrix, userid, movieid, utility_matrix):
+    num = 0
+    den = 0
+    for key in similarity_matrix.keys():
+        if similarity_matrix[key] > 0 and similarity_matrix[key] != 1 and (userid in utility_matrix[key].keys()):
+            num += (similarity_matrix[key]*utility_matrix[key][userid])
+            den += similarity_matrix[key]
+    return num/den
+
+
 def main():
     utility_matrix, util_mean = initialise()
 
@@ -99,10 +110,12 @@ def main():
     print(score)
     """
 
-
     utility_matrix, util_mean = normalize(utility_matrix, util_mean)
-    similarity_matrix = pairwise_sim(1, 5, utility_matrix))
-    
+    similarity_matrix = pairwise_sim(1, 5, utility_matrix)
+    print(utility_matrix['1'])
+    print(utility_matrix['3'])
+    score = similarity(utility_matrix['1'], utility_matrix['3'])
+    print(score)
 
 
 main()
