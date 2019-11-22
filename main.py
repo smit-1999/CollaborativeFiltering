@@ -10,7 +10,7 @@ def get_dataset_directory():
 
 def initialise():
     dataset_directory = get_dataset_directory()
-    dataset = os.path.join(dataset_directory, "ratings.dat")
+    dataset = os.path.join(dataset_directory, "test_ratings.dat")
     file = open(dataset, "r")
     dict = {}  # dictionary of {movie:{user:rating}}
     dict_mean = {}  # dictionary of {movieid : user ratings mean}
@@ -32,7 +32,7 @@ def initialise():
     for key in dict_mean.keys():
         dict_mean[key] = dict_mean[key]/len((dict[key]))
 
-    print(sum(len(lst) for dct in dict.values() for lst in dct.values()))
+    # print(sum(len(lst) for dct in dict.values() for lst in dct.values()))
     return dict, dict_mean
 
 
@@ -67,12 +67,19 @@ def similarity(dict_a, dict_b):
             if key in dict_a.keys():
                 score += dict_a[key] * dict_b[key]
 
+    print(score, mod(dict_a), mod(dict_b))
     score = score/((math.sqrt(mod(dict_a)))*(math.sqrt(mod(dict_b))))
     return score
 
 
 def main():
     utility_matrix, util_mean = initialise()
+
+    """"
+    print(utility_matrix)
+    score = similarity(utility_matrix['1'], utility_matrix['3'])
+    print(score)
+    """
 
 
 main()
