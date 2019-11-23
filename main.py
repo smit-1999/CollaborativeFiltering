@@ -3,6 +3,7 @@ import pandas as pd
 import math
 from sklearn.model_selection import train_test_split
 
+
 def get_dataset_directory():
     curr_dir = os.getcwd()  # gets the current working directory
     dataset_dir = os.path.join(curr_dir, "dataset")  # concatenates
@@ -25,8 +26,12 @@ def initialise():
     df = pd.DataFrame(data, columns=['userid', 'movieid', 'rating'])
     train_df, test_df = train_test_split(df, test_size=0.3)
     print(train_df)
-    print(test_df)
-    """"   
+    # print(test_df)
+    for tuple in train_df.itertuples():
+        userid = tuple[1]
+        movieid = tuple[2]
+        rating = tuple[3]
+
         if movieid in dict.keys():
             dict[movieid][userid] = int(rating)
             dict_mean[movieid] += int(rating)
@@ -37,8 +42,8 @@ def initialise():
 
     for key in dict_mean.keys():
         dict_mean[key] = dict_mean[key]/len((dict[key]))
-
-    """
+    print(dict, dict_mean)
+    print(test_df)
     return dict, dict_mean
 
 
