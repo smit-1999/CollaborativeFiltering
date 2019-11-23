@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import math
+from sklearn.model_selection import train_test_split
 
 def get_dataset_directory():
     curr_dir = os.getcwd()  # gets the current working directory
@@ -14,13 +15,18 @@ def initialise():
     file = open(dataset, "r")
     dict = {}  # dictionary of {movie:{user:rating}}
     dict_mean = {}  # dictionary of {movieid : mean(of user ratings)}
-
+    data = []
     for line in file:
         fields = line.split("::")
         userid = fields[0]
         movieid = fields[1]
         rating = fields[2]
-
+        data.append([userid, movieid, rating])
+    df = pd.DataFrame(data, columns=['userid', 'movieid', 'rating'])
+    train_df, test_df = train_test_split(df, test_size=0.3)
+    print(train_df)
+    print(test_df)
+    """"   
         if movieid in dict.keys():
             dict[movieid][userid] = int(rating)
             dict_mean[movieid] += int(rating)
@@ -32,7 +38,7 @@ def initialise():
     for key in dict_mean.keys():
         dict_mean[key] = dict_mean[key]/len((dict[key]))
 
-
+    """
     return dict, dict_mean
 
 
@@ -90,42 +96,44 @@ def pairwise_sim(movie, user, utility_matrix):
     return similarity_dict
 
 
-def predicted_rating(similarity_matrix, userid, movieid, utility_matrix, util_mean):
+def predicted_rating(similarity_matrix, movieid, userid, utility_matrix, util_mean, global_mean, util_user_mean):
+
     num = 0
+    num_baseline = 0
     den = 1
 
     for movie in similarity_matrix.keys():
-
         if similarity_matrix[movie] > 0 and similarity_matrix[movie] != 1 and (userid in utility_matrix[movie].keys()):
             print('similarity val=', similarity_matrix[movie], 'for movie:', movie)
             print((utility_matrix[movie].keys()))
             print(utility_matrix[movie][userid])
             num += (similarity_matrix[movie]*(utility_matrix[movie][userid])+util_mean[movie])
+            num_baseline += (similarity_matrix[movie]*(utility_matrix[movie][userid]+util_mean[movie] -
+                             (global_mean + util_mean[movie] + util_user_mean[userid])))
             den += similarity_matrix[movie]
     print('num=', num, 'den:', den)
-    return num/den
+    return (num/den), (num_baseline/den)
 
 
 def main():
-    utility_matrix, util_mean = initialise()
-
+    utility_matrix,  util_mean = initialise()
 
     """"
     print(utility_matrix)
     score = similarity(utility_matrix['1'], utility_matrix['3'])
     print(score)
-    """
+    
 
     utility_matrix, util_mean = normalize(utility_matrix, util_mean)
     similarity_matrix = pairwise_sim(1, 5, utility_matrix)
-    pred_val = predicted_rating(similarity_matrix, '5', '1', utility_matrix, util_mean)
+    pred_val, pred_baseline = predicted_rating(similarity_matrix, '1', '5', utility_matrix, util_mean, global_mean, util_user_mean)
     print(pred_val)
+    """
 
 
 main()
 
-
-# get dataset in dataframe
-# find similarity between users
-# find row mean
-# find baseline estimate bx + bi + myu
+# TODO:
+# get train and test dataset from ratings.dat
+# implement baseline approach
+#
