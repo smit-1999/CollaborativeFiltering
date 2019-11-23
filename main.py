@@ -14,7 +14,9 @@ def initialise():
     file = open(dataset, "r")
     dict = {}  # dictionary of {movie:{user:rating}}
     dict_mean = {}  # dictionary of {movieid : mean(of user ratings)}
-
+    dict_user = {} #dictionary of {user:{movie:rating}}
+    user_mean = {} #dictionary to give average user rating
+    
     for line in file:
         fields = line.split("::")
         userid = fields[0]
@@ -28,9 +30,21 @@ def initialise():
             dict[movieid] = {}
             dict[movieid][userid] = int(rating)
             dict_mean[movieid] = int(rating)
-
+        
+        #for dict_user and user_mean dictionary
+        if userid in user_mean.keys():
+            dict_user[userid][movieid] = int(rating)
+            user_mean[userid] += int(rating)
+        else:
+            dict_user[userid] = {}
+            dict_user[userid][movieid] = int(rating)
+            user_mean[userid] = int(rating)
+            
     for key in dict_mean.keys():
         dict_mean[key] = dict_mean[key]/len((dict[key]))
+        
+    for user in user_mean.keys():
+        user_mean[user] = user_mean[user]/len(dict_user[user])
 
 
     return dict, dict_mean
