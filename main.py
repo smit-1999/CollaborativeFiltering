@@ -64,7 +64,7 @@ def initialise():
     for user in user_mean.keys():
         user_mean[user] = user_mean[user]/len(dict_user[user])
 
-    return dict, dict_mean, user_mean, (global_sum/cnt), test_df
+    return dict, dict_mean, user_mean, (global_sum/cnt), test_df, dict_user
 
 
 def mod(dict_a):
@@ -141,18 +141,39 @@ def predicted_rating(similarity_matrix, movieid, userid, utility_matrix, util_me
             num_baseline += (similarity_matrix[movie]*((utility_matrix[movie][userid]+util_mean[movie]) -
                              (global_mean + util_mean[movie]-global_mean + util_user_mean[userid] - global_mean)))
             den += similarity_matrix[movie]
-    print('num of pred=', num, 'den of pred:', den)
     return (num/den), (num_baseline/den)
 
 
+def pairwise_sim_user(userid, util_user):
+    similarity_dict = {}
+    for user in util_user:
+        similarity_dict[user] = similarity(util_user[userid], util_user[user])
+
+    return similarity_dict
+
+
+def user_user(util_user, userid, movieid,  user_mean):
+    sim_user_dict = pairwise_sim_user(userid, util_user)
+    num = 0
+    den = 1
+
+    for user in sim_user_dict.keys():
+        if sim_user_dict[user] > 0 and sim_user_dict[user] != 1 and (movieid in util_user[user].keys()):
+            num += sim_user_dict[user]*(util_user[user][movieid]+user_mean[user])
+            den += sim_user_dict[user]
+    return num/den
+
+
 def main():
-    utility_matrix,  util_mean, user_mean, global_mean, test_df = initialise()
+    utility_matrix,  util_mean, user_mean, global_mean, test_df, util_user = initialise()
 
     print('utility matrix:', utility_matrix)
     print('test_df', test_df)
     utility_matrix, util_mean = normalize(utility_matrix, util_mean)
+    util_user, user_mean = normalize(util_user, user_mean)
     rmse = 0
     rmse_baseline = 0
+    rmse_user = 0
     for tuple in test_df.itertuples():
         user = tuple[1]
         movie = tuple[2]
@@ -162,6 +183,7 @@ def main():
         similarity_matrix = pairwise_sim((tuple[2]), (tuple[1]), utility_matrix)
         pred_val, pred_baseline = predicted_rating(similarity_matrix, tuple[2], tuple[1], utility_matrix, util_mean,
                                                    global_mean, user_mean)
+        pred_user= user_user(util_user,user, movie, user_mean)
         bx = 0
         bi = 0
         if user in user_mean.keys():
@@ -172,14 +194,13 @@ def main():
 
         rmse += (pred_val - rating)**2
         rmse_baseline += (pred_baseline - rating)**2
+        rmse_user += (pred_user-rating)**2
         print('pred_val:', pred_val, 'pred_baseline:', pred_baseline)
+        print('Using user user:', pred_user)
         print('############')
     print("RMSE:", math.sqrt(rmse/len(test_df)))
     print("RMSE Baseline: ", math.sqrt(rmse_baseline/len(test_df)))
+    print('RMSE_user:', rmse_user)
+
 
 main()
-
-# TODO:
-# get train and test dataset from ratings.dat
-# implement baseline approach
-#
